@@ -8,8 +8,22 @@ from sklearn.externals import joblib
 from scipy import stats
 from tqdm import trange
 from warnings import filterwarnings
+from joblib import Parallel, delayed
+
 
 filterwarnings(action='ignore', category=RuntimeWarning)
+
+
+def run_per_perm(perms, P1, N, x):
+    """
+    get min_vals for each permutation using parallelisation
+    """
+    these_perms = np.vstack([perms[k, :, np.random.choice(np.arange(P1))]
+                            for k in range(N)])
+    min_vals = these_perms.min(axis=0)
+
+    return min_vals
+
 
 class PrevalenceInference(object):
     """
@@ -42,13 +56,13 @@ class PrevalenceInference(object):
                                   alpha=0.05)
     >>> pvi.run()
     Running with parameters:
-	N = 20
-	K = 60800
-	P1 = 15
-	P2 = 100000
+    N = 20
+    K = 60800
+    P1 = 15
+    P2 = 100000
     """
 
-    def __init__(self, obs, perms, P2=100000, gamma0=0.5, alpha=0.05):
+    def __init__(self, obs, perms, P2=100000, gamma0=0.5, alpha=0.05, njobs=1):
         """ Initializes PrevalenceInference object."""
 
         self.obs = obs
@@ -56,6 +70,7 @@ class PrevalenceInference(object):
         self.P2 = P2
         self.gamma0 = gamma0
         self.alpha = alpha
+        self.njobs = njobs
         self.N = None
         self.K = None
         self.P1 = None
@@ -120,6 +135,17 @@ class PrevalenceInference(object):
 
         if K > 1:
             c_rank = np.zeros(K)
+
+        # collect scores in parallel
+        """
+        scores = Parallel(n_jobs=self.njobs)(delayed(run_per_perm)(perms, P1, N, x) for x in range(P2))
+
+        for j in range(P2):
+            these_min_vals = min_vals[j]
+            u_rank += m <= min_val
+            if K > 1
+                c_rank += m <= these_min_vals.max()
+        """
 
         for j in trange(P2):  # Loop for second level permutations
             these_perms = np.vstack([self.perms[k, :, np.random.choice(np.arange(P1))]
