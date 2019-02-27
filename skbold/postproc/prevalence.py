@@ -137,7 +137,7 @@ class PrevalenceInference(object):
             c_rank = np.zeros(K)
 
         # collect scores in parallel
-        scores = Parallel(n_jobs=self.njobs)(delayed(run_per_perm)(self.perms, P1, N, x) for x in range(P2))
+        scores = Parallel(n_jobs=self.njobs)(delayed(run_per_perm)(self.perms, P1, N, x) for x in trange(P2))
 
         for j in range(P2):
             these_min_vals = scores[j]
