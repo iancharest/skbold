@@ -137,16 +137,15 @@ class PrevalenceInference(object):
             c_rank = np.zeros(K)
 
         # collect scores in parallel
-        """
-        scores = Parallel(n_jobs=self.njobs)(delayed(run_per_perm)(perms, P1, N, x) for x in range(P2))
+        scores = Parallel(n_jobs=self.njobs)(delayed(run_per_perm)(self.perms, P1, N, x) for x in range(P2))
 
         for j in range(P2):
-            these_min_vals = min_vals[j]
-            u_rank += m <= min_val
-            if K > 1
+            these_min_vals = scores[j]
+            u_rank += m <= these_min_vals
+            if K > 1:
                 c_rank += m <= these_min_vals.max()
+        
         """
-
         for j in trange(P2):  # Loop for second level permutations
             these_perms = np.vstack([self.perms[k, :, np.random.choice(np.arange(P1))]
                                      for k in range(N)])
@@ -155,7 +154,7 @@ class PrevalenceInference(object):
 
             if K > 1:  # Update corrected values
                 c_rank += m <= min_vals.max()
-
+        """
         # Calculate statistics!
         # - pu_GN = pvalue uncorrected Global Null,
         # - pu_MN = pvalue uncorrected Majority Null,
